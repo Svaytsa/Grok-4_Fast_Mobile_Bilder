@@ -1,0 +1,42 @@
+name: Android CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      GRADLE_BUILD_DIR: Tests/Codex
+    defaults:
+      run:
+        working-directory: ${{ env.GRADLE_BUILD_DIR }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+        with:
+          gradle-wrapper-directory: ${{ env.GRADLE_BUILD_DIR }}
+
+      - name: Build Debug APK
+        uses: gradle/gradle-build-action@v3
+        with:
+          build-root-directory: ${{ env.GRADLE_BUILD_DIR }}
+          arguments: :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: Tests/Codex/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

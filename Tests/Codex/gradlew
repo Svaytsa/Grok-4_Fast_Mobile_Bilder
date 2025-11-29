@@ -1,0 +1,74 @@
+#!/bin/sh
+# Gradle start-up script with on-demand wrapper jar download
+set -e
+
+PRG="$0"
+while [ -h "$PRG" ]; do
+  ls_output=$(ls -ld "$PRG")
+  link=$(expr "$ls_output" : '.*-> \(.*\)$')
+  if expr "$link" : '/.*' >/dev/null; then
+    PRG="$link"
+  else
+    PRG="$(dirname "$PRG")/$link"
+  fi
+done
+SAVED="$(pwd)"
+cd "$(dirname "$PRG")"
+APP_HOME="$(pwd -P)"
+cd "$SAVED"
+
+WRAPPER_JAR="$APP_HOME/gradle/wrapper/gradle-wrapper.jar"
+PROPERTIES_FILE="$APP_HOME/gradle/wrapper/gradle-wrapper.properties"
+
+download_wrapper() {
+  if [ ! -r "$PROPERTIES_FILE" ]; then
+    echo "ERROR: Missing $PROPERTIES_FILE" >&2
+    exit 1
+  fi
+
+  DIST_URL=$(grep '^distributionUrl=' "$PROPERTIES_FILE" | cut -d= -f2- | sed 's#\\:#:#g; s#\\/#/#g')
+  if [ -z "$DIST_URL" ]; then
+    echo "ERROR: distributionUrl not set in $PROPERTIES_FILE" >&2
+    exit 1
+  fi
+
+  VERSION=$(echo "$DIST_URL" | sed -n 's#.*gradle-\([^/]*\)-[^/]*\.zip#\1#p')
+  if [ -z "$VERSION" ]; then
+    echo "ERROR: Unable to parse Gradle version from distributionUrl" >&2
+    exit 1
+  fi
+
+  TMP_ZIP=$(mktemp)
+  echo "Downloading Gradle $VERSION wrapper..." >&2
+  if command -v curl >/dev/null 2>&1; then
+    curl -fL "$DIST_URL" -o "$TMP_ZIP"
+  elif command -v wget >/dev/null 2>&1; then
+    wget -O "$TMP_ZIP" "$DIST_URL"
+  else
+    echo "ERROR: curl or wget is required to download the Gradle wrapper." >&2
+    rm -f "$TMP_ZIP"
+    exit 1
+  fi
+
+  mkdir -p "$(dirname "$WRAPPER_JAR")"
+  if command -v unzip >/dev/null 2>&1; then
+    unzip -p "$TMP_ZIP" "gradle-$VERSION/lib/gradle-wrapper-$VERSION.jar" > "$WRAPPER_JAR"
+  else
+    echo "ERROR: unzip is required to extract the Gradle wrapper jar." >&2
+    rm -f "$TMP_ZIP"
+    exit 1
+  fi
+  rm -f "$TMP_ZIP"
+}
+
+if [ ! -r "$WRAPPER_JAR" ]; then
+  download_wrapper
+fi
+
+if [ -n "$JAVA_HOME" ]; then
+  JAVA_CMD="$JAVA_HOME/bin/java"
+else
+  JAVA_CMD="java"
+fi
+
+exec "$JAVA_CMD" -Dorg.gradle.appname=gradlew -classpath "$WRAPPER_JAR" org.gradle.wrapper.GradleWrapperMain "$@"
