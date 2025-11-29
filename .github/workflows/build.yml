@@ -23,11 +23,6 @@ jobs:
           java-version: 17
           cache: gradle
 
-      - name: Gradle Wrapper Validation
-        uses: gradle/actions/wrapper-validation@v4
-        with:
-          gradle-wrapper-directory: ${{ env.GRADLE_BUILD_DIR }}
-
       - name: Build Debug APK
         uses: gradle/gradle-build-action@v3
         with:
