@@ -1,0 +1,72 @@
+name: Android CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Tests/Codex
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+          cache: gradle
+
+      - name: Gradle Wrapper Validation
+        uses: gradle/actions/wrapper-validation@v4
+
+      - name: Build Debug APK
+        uses: gradle/gradle-build-action@v3
+        with:
+          arguments: :app:assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: Tests/Codex/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+
+  build-gemini:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./Tests/Gemini
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: 8.7
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew :app:assembleDebug --stacktrace
+
+      - name: Run Unit Tests
+        run: ./gradlew :app:testDebug --stacktrace
+
+      - name: Upload Gemini Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gemini-debug-apk
+          path: Tests/Gemini/app/build/outputs/apk/debug/app-debug.apk
