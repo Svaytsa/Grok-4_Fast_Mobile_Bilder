@@ -1,9 +1,0 @@
-<resources>
-    <string name="app_name">Palette Picker</string>
-    <string name="select_photo">Выбрать фото</string>
-    <string name="copy">Copy</string>
-    <string name="colors_title">Доминирующие цвета</string>
-    <string name="image_content_description">Выбранное изображение</string>
-    <string name="copied_message">HEX скопирован</string>
-    <string name="placeholder_message">Выберите фото, чтобы увидеть палитру.</string>
-</resources>
