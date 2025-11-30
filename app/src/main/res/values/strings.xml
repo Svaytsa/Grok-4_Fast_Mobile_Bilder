@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Palette App</string>
+    <string name="select_image">Выбрать фото</string>
+    <string name="image_preview_desc">Selected image preview</string>
+    <string name="copy_to_clipboard">Copied to clipboard</string>
+    <string name="copy">Copy</string>
+</resources>
